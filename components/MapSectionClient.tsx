@@ -39,7 +39,13 @@ export default function MapSectionClient() {
           Recent Sales by Area
         </h3>
 
-        <ul className="space-y-0" role="list" aria-label="Recent sold homes by city">
+        {/* onMouseLeave on the ul — not individual rows — prevents flicker when crossing rows */}
+        <ul
+          className="space-y-0"
+          role="list"
+          aria-label="Recent sold homes by city"
+          onMouseLeave={() => setActiveCity(null)}
+        >
           {CITIES.map((city) => {
             const cityProps = properties.filter((p) => p.city === city);
             if (cityProps.length === 0) return null;
@@ -51,11 +57,10 @@ export default function MapSectionClient() {
                 <button
                   className={`w-full text-left flex items-center justify-between px-3 py-3.5 rounded-xl border transition-all duration-200 ${
                     isActive
-                      ? 'bg-accent/8 border-accent/30 shadow-sm scale-[1.01]'
+                      ? 'bg-accent/8 border-accent/30 shadow-sm'
                       : 'border-transparent hover:bg-slate-50 hover:border-slate-200'
                   }`}
                   onMouseEnter={() => setActiveCity(city)}
-                  onMouseLeave={() => setActiveCity(null)}
                   onFocus={() => setActiveCity(city)}
                   onBlur={() => setActiveCity(null)}
                   aria-label={`${city}: ${cityProps.length} homes sold, latest sold for ${formatPrice(latest.soldPrice)}`}
