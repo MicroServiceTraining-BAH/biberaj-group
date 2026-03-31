@@ -1,101 +1,183 @@
-import Image from "next/image";
+import type { Metadata } from 'next';
+import HeroCarousel from '@/components/HeroCarousel';
+import StatsSection from '@/components/StatsSection';
+import Testimonials from '@/components/Testimonials';
+import CTASection from '@/components/CTASection';
+import MapSection from '@/components/MapSection';
+import PropertyCard from '@/components/PropertyCard';
+import Link from 'next/link';
+import { properties } from '@/lib/properties';
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: 'Biberaj Group | Northern Virginia Real Estate — Just Sold',
+  description:
+    'Biberaj Group specializes in selling homes across Northern Virginia. See recently sold homes in Fairfax, Arlington, Alexandria, Reston, and Herndon, VA.',
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateAgent',
+  name: 'Biberaj Group',
+  url: 'https://www.biberajgroup.com',
+  telephone: '+17035550100',
+  email: 'hello@biberajgroup.com',
+  areaServed: [
+    'Fairfax, VA',
+    'Arlington, VA',
+    'Alexandria, VA',
+    'Reston, VA',
+    'Herndon, VA',
+    'Ashburn, VA',
+  ],
+  description:
+    'Northern Virginia real estate team specializing in buying and selling homes with 500+ transactions completed.',
+};
+
+export default function HomePage() {
+  const featured = properties.slice(0, 6);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <HeroCarousel />
+
+      {/* Featured sold homes */}
+      <section className="py-20 bg-bg" aria-labelledby="featured-heading">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <p className="text-accent font-semibold text-sm uppercase tracking-widest mb-2">
+                Recent Closings
+              </p>
+              <h2
+                id="featured-heading"
+                className="font-display font-bold text-navy text-3xl sm:text-4xl"
+              >
+                Recently Sold Homes
+              </h2>
+              <p className="text-navy-600 mt-2 text-sm">
+                Homes sold across Northern Virginia by Biberaj Group
+              </p>
+            </div>
+            <Link
+              href="/sold"
+              className="inline-flex items-center gap-2 text-accent font-semibold text-sm hover:gap-3 transition-all"
+            >
+              View all sold homes
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featured.map((p) => (
+              <PropertyCard key={p.id} property={p} />
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+
+      <StatsSection />
+
+      {/* Value proposition */}
+      <section className="py-20 bg-white" aria-labelledby="why-heading">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="text-accent font-semibold text-sm uppercase tracking-widest mb-3">
+                Why Biberaj Group
+              </p>
+              <h2
+                id="why-heading"
+                className="font-display font-bold text-navy text-3xl sm:text-4xl mb-5"
+              >
+                Sell Faster. Sell for More.
+              </h2>
+              <p className="text-navy-600 leading-relaxed mb-8 text-base">
+                We combine hyper-local market intelligence with aggressive marketing to get you the
+                best price — in the shortest time. Our results speak for themselves: homes listed with
+                Biberaj Group sell 40% faster and at 2.3% higher than the Northern Virginia average.
+              </p>
+
+              <div className="space-y-5">
+                {[
+                  {
+                    title: 'Strategic Pricing',
+                    desc: 'Data-driven pricing that captures full market value without leaving money on the table.',
+                    icon: '📊',
+                  },
+                  {
+                    title: 'Professional Marketing',
+                    desc: 'Cinematic photography, video tours, and targeted digital ads that bring buyers in.',
+                    icon: '📸',
+                  },
+                  {
+                    title: 'Expert Negotiation',
+                    desc: "We've negotiated hundreds of contracts. We know how to get sellers more.",
+                    icon: '🤝',
+                  },
+                ].map(({ title, desc, icon }) => (
+                  <div key={title} className="flex gap-4">
+                    <div className="w-11 h-11 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" aria-hidden="true">
+                      {icon}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy text-base mb-1">{title}</h3>
+                      <p className="text-navy-600 text-sm leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-3">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-xl font-semibold text-sm transition-all shadow-cta hover:-translate-y-0.5"
+                >
+                  Get Your Home Value
+                </Link>
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-2 border border-slate-200 text-navy hover:bg-slate-50 px-6 py-3.5 rounded-xl font-semibold text-sm transition-colors"
+                >
+                  Meet the Team
+                </Link>
+              </div>
+            </div>
+
+            {/* Right side: achievement cards */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: 'Top 1%', sublabel: 'Northern VA Agents', color: 'bg-accent' },
+                { label: '40%', sublabel: 'Faster than avg.', color: 'bg-success' },
+                { label: '2.3%', sublabel: 'Higher sale price', color: 'bg-amber-500' },
+                { label: '5★', sublabel: 'Google Reviews', color: 'bg-purple-600' },
+              ].map(({ label, sublabel, color }) => (
+                <div
+                  key={label}
+                  className="bg-bg border border-slate-200 rounded-2xl p-6 text-center hover:shadow-card transition-shadow"
+                >
+                  <div
+                    className={`w-10 h-10 ${color} rounded-xl mx-auto mb-3`}
+                    aria-hidden="true"
+                  />
+                  <p className="font-display font-bold text-navy text-3xl leading-none">{label}</p>
+                  <p className="text-navy-600 text-xs mt-1.5">{sublabel}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Testimonials />
+      <MapSection />
+      <CTASection />
+    </>
   );
 }
