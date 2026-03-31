@@ -23,7 +23,6 @@ function makeIcon(L: typeof import('leaflet'), active: boolean): DivIcon {
       width:${size}px;height:${size}px;
       transform:rotate(-45deg);
       box-shadow:0 2px 10px rgba(0,0,0,${active ? '0.4' : '0.25'});
-      transition:all 0.2s ease;
     "></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
@@ -36,8 +35,10 @@ export default function PropertyMap({ properties, activeCity, onActiveCityChange
   const mapRef = useRef<Map | null>(null);
   const markersByCity = useRef<Record<string, Marker[]>>({});
   const leafletRef = useRef<typeof import('leaflet') | null>(null);
+  // Use a ref so the mouseout debounce can read the latest callback without re-running init
+  const onChangeCityRef = useRef(onActiveCityChange);
+  onChangeCityRef.current = onActiveCityChange;
 
-  // Init map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -59,37 +60,43 @@ export default function PropertyMap({ properties, activeCity, onActiveCityChange
         maxZoom: 18,
       }).addTo(map);
 
-      // Group markers by city
       const byCity: Record<string, Marker[]> = {};
+      // Debounce timer so cursor moving from marker → popup doesn't clear state
+      let clearTimer: ReturnType<typeof setTimeout> | null = null;
 
       properties.forEach((p) => {
-        const icon = makeIcon(L, false);
-        const marker = L.marker([p.lat, p.lng], { icon });
+        const marker = L.marker([p.lat, p.lng], { icon: makeIcon(L, false) });
 
-        const popup = L.popup({ maxWidth: 240 }).setContent(`
-          <div style="font-family:Inter,sans-serif;padding:4px 2px;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-              <span style="background:#22C55E;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;">SOLD</span>
-              <span style="font-size:10px;color:#64748B;">${p.soldDate}</span>
+        marker.bindPopup(
+          L.popup({ maxWidth: 240 }).setContent(`
+            <div style="font-family:Inter,sans-serif;padding:4px 2px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="background:#22C55E;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;">SOLD</span>
+                <span style="font-size:10px;color:#64748B;">${p.soldDate}</span>
+              </div>
+              <p style="font-weight:700;font-size:15px;color:#0F172A;margin:0 0 2px;">${formatPrice(p.soldPrice)}</p>
+              <p style="font-size:12px;color:#334155;margin:0 0 6px;line-height:1.4;">${p.address}<br/>${p.city}, ${p.state} ${p.zip}</p>
+              <div style="display:flex;gap:10px;font-size:11px;color:#475569;border-top:1px solid #E2E8F0;padding-top:6px;">
+                <span>${p.beds} bd</span><span>${p.baths} ba</span>
+                <span>${p.sqft.toLocaleString()} sqft</span>
+                <span style="margin-left:auto;color:#2563EB;font-weight:600;">${p.daysOnMarket}d on market</span>
+              </div>
             </div>
-            <p style="font-weight:700;font-size:15px;color:#0F172A;margin:0 0 2px;">${formatPrice(p.soldPrice)}</p>
-            <p style="font-size:12px;color:#334155;margin:0 0 6px;line-height:1.4;">${p.address}<br/>${p.city}, ${p.state} ${p.zip}</p>
-            <div style="display:flex;gap:10px;font-size:11px;color:#475569;border-top:1px solid #E2E8F0;padding-top:6px;margin-top:4px;">
-              <span>${p.beds} bd</span>
-              <span>${p.baths} ba</span>
-              <span>${p.sqft.toLocaleString()} sqft</span>
-              <span style="margin-left:auto;color:#2563EB;font-weight:600;">${p.daysOnMarket}d on market</span>
-            </div>
-          </div>
-        `);
+          `)
+        );
 
-        marker.bindPopup(popup).addTo(map);
         marker.on('mouseover', () => {
+          if (clearTimer) clearTimeout(clearTimer);
           marker.openPopup();
-          onActiveCityChange(p.city);
+          onChangeCityRef.current(p.city);
         });
-        marker.on('mouseout', () => onActiveCityChange(null));
 
+        // Debounce the clear — gives 120ms grace period when cursor moves to popup
+        marker.on('mouseout', () => {
+          clearTimer = setTimeout(() => onChangeCityRef.current(null), 120);
+        });
+
+        marker.addTo(map);
         if (!byCity[p.city]) byCity[p.city] = [];
         byCity[p.city].push(marker);
       });
@@ -102,23 +109,23 @@ export default function PropertyMap({ properties, activeCity, onActiveCityChange
       mapRef.current?.remove();
       mapRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // React to activeCity changes — update pin colours
+  // Update pin colours when activeCity changes (driven by table hover)
   useEffect(() => {
     const L = leafletRef.current;
-    if (!L || !mapRef.current) return;
+    if (!L) return;
 
     Object.entries(markersByCity.current).forEach(([city, markers]) => {
-      const isActive = activeCity === city;
-      markers.forEach((m) => m.setIcon(makeIcon(L, isActive)));
+      const active = activeCity === city;
+      markers.forEach((m) => m.setIcon(makeIcon(L, active)));
     });
 
-    // Pan map to city
-    if (activeCity && markersByCity.current[activeCity]?.length) {
-      const first = markersByCity.current[activeCity][0];
-      mapRef.current.panTo(first.getLatLng(), { animate: true, duration: 0.5 });
+    if (activeCity && markersByCity.current[activeCity]?.length && mapRef.current) {
+      const latlngs = markersByCity.current[activeCity].map((m) => m.getLatLng());
+      const bounds = leafletRef.current!.latLngBounds(latlngs);
+      mapRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 13, animate: true });
     }
   }, [activeCity]);
 
