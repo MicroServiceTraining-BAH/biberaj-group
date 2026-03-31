@@ -83,9 +83,9 @@ export default function HeroCarousel() {
         </div>
       ))}
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
+      {/* Gradient overlays — stronger for legibility */}
+      <div className="absolute inset-0 bg-gradient-to-r from-navy/92 via-navy/75 to-navy/40" />
+      <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-transparent to-navy/30" />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32">
@@ -97,15 +97,15 @@ export default function HeroCarousel() {
           </div>
 
           {/* Headline */}
-          <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-6xl leading-tight mb-4">
+          <h1 className="font-display font-bold text-white text-4xl sm:text-5xl lg:text-6xl leading-tight mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
             Recently Sold Homes
             <br />
-            <span className="text-accent">Northern Virginia</span>
+            <span className="text-[#60A5FA]">Northern Virginia</span>
           </h1>
 
-          <p className="text-white/80 text-lg sm:text-xl mb-8 leading-relaxed max-w-xl">
+          <p className="text-white text-lg sm:text-xl mb-8 leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
             See what homes are selling for in your neighborhood.{' '}
-            <strong className="text-white font-semibold">500+ homes sold</strong> — local expertise
+            <strong className="text-white font-bold">500+ homes sold</strong> — local expertise
             that delivers results.
           </p>
 
@@ -136,10 +136,10 @@ export default function HeroCarousel() {
               { value: '7 Days', label: 'Avg. Days on Market' },
             ].map(({ value, label }) => (
               <div key={label} className="flex flex-col">
-                <span className="text-white font-display font-bold text-2xl leading-none">
+                <span className="text-white font-display font-bold text-2xl leading-none drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
                   {value}
                 </span>
-                <span className="text-white/60 text-sm mt-1">{label}</span>
+                <span className="text-white/85 text-sm mt-1 font-medium">{label}</span>
               </div>
             ))}
           </div>
